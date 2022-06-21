@@ -54,7 +54,6 @@ void loop()
         break;
       }
       Response myResponse(r, p);
-      // TODO: Review add payload to response and maybe set crc
       driver.send(myResponse.responseArray, RESPONSE_SIZE);
       driver.printBuffer("Sent: ", myResponse.responseArray, RESPONSE_SIZE);
     }
