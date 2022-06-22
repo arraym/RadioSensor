@@ -6,7 +6,9 @@
 #include <SPI.h>                // Not actually used but needed to compile
 #endif
 
-#define MY_ADDRESS    0x01      // This board destination address
+#define MY_ADDRESS  0x01        // This board destination address
+
+#define SENSOR_TIME 3000        // Time to wait for sensor response
 
 // Radio driver defines
 #define RX_PIN      11
@@ -16,6 +18,7 @@
 RH_ASK driver(2000, RX_PIN, TX_PIN, PTT_PIN);  
                                 // ATTiny, RX on D3 (pin 2 on attiny85) TX on D4 (pin 3 on attiny85), 
 DHT dht;
+unsigned long startTime;
 
 void setup()
 {
@@ -48,22 +51,44 @@ void loop()
       {
       case GET_TEMPERATURE:
       {
-        float temperature = dht.getTemperature();
+        startTime = millis();
+        float temp = dht.getTemperature();
+        while(dht.getStatus())
+        {
+          if (millis() - startTime > SENSOR_TIME)
+          {
+            recvCommand.cmd = NO_COMMAND;   // go to default case
+            break;
+          }
+          delay(dht.getMinimumSamplingPeriod());
+          temp = dht.getTemperature();
+        }
         Serial.print("Temperature: ");
-        Serial.print(temperature, 2);
+        Serial.print(temp, 2);
         Serial.println("*C");
         r = ACK;
-        p = (uint32_t)(temperature * 100);
+        p = (uint32_t)(temp * 100);
         break;
       }
       case GET_HUMIDITY:
       {
-        float humidity = dht.getHumidity();
+        startTime = millis();
+        float hdt = dht.getHumidity();
+        while(dht.getStatus())
+        {
+          if (millis() - startTime > SENSOR_TIME)
+          {
+            recvCommand.cmd = NO_COMMAND;   // go to default case
+            break;
+          }
+          delay(dht.getMinimumSamplingPeriod());
+          hdt = dht.getHumidity();
+        }
         Serial.print("Humidity: ");
-        Serial.print(humidity, 2);
+        Serial.print(hdt, 2);
         Serial.println("%");
         r = ACK;
-        p = (uint32_t)(humidity * 100);
+        p = (uint32_t)(hdt * 100);
         break;
       }
       default:
