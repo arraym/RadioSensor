@@ -8,7 +8,7 @@
 
 #define MY_ADDRESS  0x01        // This board destination address
 
-#define SENSOR_TIME 3000        // Time to wait for sensor response
+#define SENSOR_TIME 4000        // Time to wait for sensor response
 
 // Radio driver defines
 #define RX_PIN      11
@@ -79,6 +79,8 @@ void loop()
           if (millis() - startTime > SENSOR_TIME)
           {
             recvCommand.cmd = NO_COMMAND;   // go to default case
+            r = NACK;
+            p = 0;
             break;
           }
           delay(dht.getMinimumSamplingPeriod());
